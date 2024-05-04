@@ -7,7 +7,6 @@ const { google } = require('googleapis');
 const cache = require('../data/Cache');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const { Console } = require('console');
 
 // const { promisify } = require('util');
 
