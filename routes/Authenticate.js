@@ -220,7 +220,7 @@ async function readRefreshToken(req, res, next) {
         var accessKey = await cache.addUser(decoded.user_id);
     }catch(err){
         console.error('Failed to add user to cache: ', err);
-        return res.status(500).send('Filed to add user, please try again');
+        return res.status(500).send('Filed to add user, please try again or consider logging out');
     }
     console.log('User Validated');
 

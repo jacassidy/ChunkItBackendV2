@@ -5,9 +5,9 @@ const dateFns = require('date-fns');
 const scopes = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/tasks.readonly',    
-    'https://www.googleapis.com/auth/userinfo.email'
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
   ];
-  //'https://www.googleapis.com/auth/userinfo.profile',
 
 function createOAuth2Client(accessToken){
     const oauth2Client = new google.auth.OAuth2(
@@ -163,15 +163,35 @@ async function assignColor(taskList, savedTasks) {
 * Lists the user's profile.
 * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
 */
+// Function to fetch user profile using Google OAuth2
 async function user(accessToken) {
-    //fix anyways
-    var profile = auth.currentUser.get().getBasicProfile();
-    console.log('ID: ' + profile.getId());
-    console.log('Full Name: ' + profile.getName());
-    console.log('Given Name: ' + profile.getGivenName());
-    console.log('Family Name: ' + profile.getFamilyName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail());
+    // Create an OAuth2 client using the access token
+    const oauth2Client = createOAuth2Client(accessToken);
+    
+    // Initialize the OAuth2 API client
+    const oauth2 = google.oauth2({
+        auth: oauth2Client,
+        version: 'v2'
+    });
+
+    // Fetch user info using the OAuth2 client
+    try {
+        const response = await oauth2.userinfo.get();
+        const profile = response.data;
+        
+        // Log or return the user profile information
+        console.log('ID: ' + profile.id);
+        console.log('Full Name: ' + profile.name);
+        console.log('Given Name: ' + profile.given_name);
+        console.log('Family Name: ' + profile.family_name);
+        console.log('Image URL: ' + profile.picture);
+        console.log('Email: ' + profile.email);
+        
+        return profile; // Return the profile data for further use
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        throw error; // Propagate the error
+    }
 }
 
 
