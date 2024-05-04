@@ -1,0 +1,21 @@
+***USE REDIS CONF***
+
+##Create docker with mounted config file
+docker run -d -p 6379:6379 -v "/MAP TO FILE/":/usr/local/etc/redis/redis.conf redis redis-server /usr/local/etc/redis/redis.conf
+##Mine
+docker run -d -p 6379:6379 -v /Users/kadencassidy/Documents/GitHub/ChunkItBackend/redis.conf:/usr/local/etc/redis/redis.conf redis redis-server /usr/local/etc/redis/redis.conf
+
+
+##Check mounted
+docker ps
+docker inspect <name>
+
+##Block all access
+sudo iptables -A INPUT -p tcp --dport 6379 -j DROP
+sudo iptables -A INPUT -p udp --dport 6379 -j DROP
+
+##Only allow local host access
+sudo iptables -I INPUT -s 127.0.0.1 -p tcp --dport 6379 -j ACCEPT
+
+##Save Settings
+sudo iptables-save > /etc/iptables/rules.v4

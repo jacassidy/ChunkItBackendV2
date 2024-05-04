@@ -1,0 +1,17 @@
+# Environment variables
+.env
+
+#Sensative info
+redis.conf
+
+#Good practice
+Postgres.txt
+Reis.txt
+
+# Logs
+*.log
+
+# Optional ignore rules for other unwanted files
+*.temp
+*.cache
+.DS_Store  # Specific to macOS
