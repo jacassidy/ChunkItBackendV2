@@ -6,8 +6,16 @@ const scopes = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/tasks.readonly',    
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile'
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/calendar.settings.readonly',
+    // 'openid'
   ];
+
+const loginScopes = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    // 'openid'
+];
 
 function createOAuth2Client(accessToken){
     const oauth2Client = new google.auth.OAuth2(
@@ -44,6 +52,74 @@ async function email(accessToken){
       });
 }
 
+async function calendar(accessToken) {
+    // Create an OAuth2 client with the provided access token
+    const oauth2Client = createOAuth2Client(accessToken);
+
+    // Create a Google Calendar API client
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    // Calculate the date range for the next week
+    const now = new Date();
+    const timeMin = now.toISOString(); // current time in ISO format
+    const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days ahead
+    const timeMax = oneWeekFromNow.toISOString(); // one week ahead in ISO format
+
+    try {
+        // Retrieve the list of events for the next week
+        const response = await calendar.events.list({
+            // calendarId: 'primary', // 'primary' retrieves events from the primary calendar of the user
+            timeMin: timeMin,
+            timeMax: timeMax,
+            singleEvents: true, // Ensures recurring events are split into individual events
+            orderBy: 'startTime', // Orders events by start time
+        });
+
+        // Return the JSON response
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        throw error; // Rethrow the error for handling at a higher level
+    }
+}
+/*
+async function getAllCalendarEvents(accessToken) {
+    const oauth2Client = createOAuth2Client(accessToken);
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    try {
+        // Fetch all calendars
+        const calendarsResponse = await calendar.calendarList.list();
+        const calendars = calendarsResponse.data.items;
+
+        const allEvents = [];
+
+        // Calculate the date range for the next week
+        const now = new Date();
+        const timeMin = now.toISOString(); // Current time in ISO format
+        const oneWeekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days ahead
+        const timeMax = oneWeekFromNow.toISOString(); // One week ahead in ISO format
+
+        for (const cal of calendars) {
+            // Fetch events for each calendar
+            const eventsResponse = await calendar.events.list({
+                calendarId: cal.id,
+                timeMin: timeMin,
+                timeMax: timeMax,
+                singleEvents: true, // Ensures recurring events are split into individual events
+                orderBy: 'startTime', // Orders events by start time
+            });
+
+            allEvents.push(...eventsResponse.data.items); // Append events to the allEvents array
+        }
+
+        return allEvents;
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        throw error; // Rethrow the error for handling at a higher level
+    }
+}
+*/
 
   /**
  * Lists the next 10 events on the user's primary calendar.
@@ -147,6 +223,25 @@ async function tasks(accessToken) {
     });
 }
 
+async function settings(accessToken) {
+    // Create an OAuth2 client with the provided access token
+    const oauth2Client = createOAuth2Client(accessToken);
+
+    // Create a Google Calendar API client
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
+
+    try {
+        // Retrieve calendar settings
+        const response = await calendar.settings.list();
+
+        // Return the JSON response
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching calendar settings:', error);
+        throw error; // Rethrow the error for handling at a higher level
+    }
+}
+
 async function assignColor(taskList, savedTasks) {
   // console.log(savedTasks);
   // console.log(taskList);
@@ -197,8 +292,11 @@ async function user(accessToken) {
 
   module.exports = {
     scopes,
+    loginScopes,
     email,
     events,
     tasks,
-    user
+    user,
+    settings,
+    calendar
   }

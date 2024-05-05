@@ -2,7 +2,7 @@
 require('dotenv').config();
 const express = require("express");
 const router = express.Router();
-const { scopes } = require('../data/GoogleData');
+const { scopes, loginScopes } = require('../data/GoogleData');
 const { google } = require('googleapis');
 const cache = require('../data/Cache');
 const crypto = require('crypto');
@@ -30,7 +30,7 @@ function createOAuth2Client() {
     );
   }
 
-router.get('/google', readRefreshToken, googleAuthenticate); 
+router.get('/google/:type', readRefreshToken, googleAuthenticate); 
 
 router.get('/', readRefreshToken, (req, res) =>{
     // if(req.query.redirect){
@@ -43,39 +43,29 @@ router.get('/', readRefreshToken, (req, res) =>{
 
 async function googleAuthenticate(req, res){
     const redirect = req.query.redirect ? decodeURIComponent(req.query.redirect) : process.env.FRONT_END_HOME;
+    const type = req.params.type;
 
     const oauth2Client = createOAuth2Client();
 
     const stateKey = generateKey();
 
-    const url = oauth2Client.generateAuthUrl({
-      access_type: 'offline', // Will return a refresh token.
-      scope: scopes,
-      response_type: 'code',
-      state: stateKey // Use the session ID or another unique identifier
-    });
-
-    // console.log('State sent to google ' + stateKey);
-  
-    /*
-    router.get('/google/login', (req, res) => {
-        const oauth2Client = createOAuth2Client();
-        const url = oauth2Client.generateAuthUrl({
+    if(type === 'login'){
+        console.log('User Logging in');
+        var url = oauth2Client.generateAuthUrl({
             access_type: 'online', // Only returns access token
-            scope: ['openid', 'profile', 'email'], // Limited scope for login
+            scope: loginScopes, // Limited scope for login
+            response_type: 'code',
+            state: stateKey // Use the session ID or another unique identifier
         });
-        res.redirect(url);
-    });
-
-    router.get('/google/signup', (req, res) => {
-        const oauth2Client = createOAuth2Client();
-        const url = oauth2Client.generateAuthUrl({
-            access_type: 'offline', // Will return a refresh token
-            scope: scopes, // Your usual signup scopes
-        });
-        res.redirect(url);
-    });
-    */
+    }else{
+        console.log('User Signing Up');
+        var url = oauth2Client.generateAuthUrl({
+            access_type: 'offline', // Will return a refresh token.
+            scope: scopes,
+            response_type: 'code',
+            state: stateKey // Use the session ID or another unique identifier
+          });
+    }
 
     createStateCookie(res, stateKey);
     console.log('About to redirect to', url);
@@ -86,8 +76,8 @@ async function getTokens(code){
     const oauth2Client = createOAuth2Client();
 
     const {tokens} = await oauth2Client.getToken(code);
-    console.log('Refresh Tokens:');
-    console.log(tokens.refresh_token);
+    // console.log('Refresh Tokens:');
+    // console.log(tokens.refresh_token);
     return tokens;
     // return tokens;
 }
@@ -116,8 +106,6 @@ router.get('/google/callback', async (req, res) => {
 
     console.log('Key state match');
 
-    console.log('Code is', code);
-
     try{
         var tokens = await getTokens(code);
     }catch(err){
@@ -131,6 +119,8 @@ router.get('/google/callback', async (req, res) => {
         console.error('Tokens null');
         return res.status(500).send('Authentication failed');
     }
+
+    console.log('Id Token', tokens.id_token);
 
     try{
         const {user_id, accessKey} = await cache.createUser(tokens.refresh_token, tokens.access_token);
@@ -274,11 +264,11 @@ router.delete('/', async (req, res) =>{
         console.error(err);
         return res.status(500).send('Failed to delete user');
     }
-    
+
     clearAccessCookie(res);
     clearRefreshCookie(res);
 
-    return res.status(100).send('Deleted User Successfully');
+    return res.status(200).send('Deleted User Successfully');
 })
 
 function createAccessCookie(res, key){

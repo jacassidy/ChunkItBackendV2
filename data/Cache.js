@@ -190,6 +190,14 @@ async function getUserGoogleData(accessKey, data){
         returnData.userData = await googleData.user(accessToken);
     }
 
+    if (data.includes('settings')){
+        returnData.settings = await googleData.settings(accessToken);
+    }
+
+    if (data.includes('calendar')){
+        returnData.calendar = await googleData.calendar(accessToken);
+    }
+
     return returnData;
 }
 
