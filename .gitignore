@@ -5,8 +5,8 @@
 redis.conf
 
 #Good practice
-Postgres.txt
-Reis.txt
+#Postgres.txt
+#Redis.txt
 
 # Logs
 *.log

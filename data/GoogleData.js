@@ -139,8 +139,8 @@ async function tasks(accessToken) {
     }
     return new Promise((resolve, reject) => {
         const task = {
-            taskData: taskData,
-            taskLists: task_lists
+            tasksData: taskData,
+            tasksList: task_lists
         };
         resolve(task);
 

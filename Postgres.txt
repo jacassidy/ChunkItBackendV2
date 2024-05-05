@@ -1,0 +1,12 @@
+###listen_addresses = 'localhost'  # only listen on the local machine
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE users (
+    index SERIAL PRIMARY KEY,
+    id UUID DEFAULT uuid_generate_v4(),
+    token TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE NOT NULL
+);
+
+CREATE INDEX users_uuid ON users(id);

@@ -156,7 +156,9 @@ async function getUserGoogleData(accessKey, data){
 
     // Check if 'data' contains 'tasks' and fetch tasks data
     if (data.includes('tasks')) {
-        returnData.tasksData = await googleData.tasks(accessToken);
+        const tasks = await googleData.tasks(accessToken);
+        returnData.tasksData = tasks.tasksData;
+        returnData.tasksList = tasks.tasksList;
         console.log('Task Data:', returnData.tasksData);
     }
 
