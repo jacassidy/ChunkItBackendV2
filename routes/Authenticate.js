@@ -105,7 +105,7 @@ router.get('/google/callback', async (req, res) => {
     }
     console.log('Found key, deleting state Cookie');
 
-    clearStateCookie(res, key);
+    clearStateCookie(res);
 
     const { state, code } = req.query;
 
@@ -196,7 +196,7 @@ async function readRefreshToken(req, res, next) {
         var decoded = jwt.verify(refreshKey, process.env.JWT_KEY);
     }catch (err){
         console.error('Invalid Refresh Key');
-        clearRefreshCookie(res, refreshKey);
+        clearRefreshCookie(res);
         return next();
         // return res.status(500).send('Invalid Refresh Key');
     }
@@ -210,7 +210,7 @@ async function readRefreshToken(req, res, next) {
     if (decoded.bind !== createClinetIdentifyer(req)) {
         //Token possibly stolen, redirect user to delete their current userID and generate a new one
         console.error( new Error('Key Bind Mismatch: Deleting Refresh Key'));
-        clearRefreshCookie(res, refreshKey);
+        clearRefreshCookie(res);
 
         return next();
     }
@@ -253,9 +253,9 @@ async function readAccessToken(req, res, next) {
     //validate access token
 
     try{
-        cache.updateUser(accessKey);
+        await cache.updateUser(accessKey);
     }catch(err){
-        clearAccessCookie(res, accessKey);
+        clearAccessCookie(res);
         console.log(err.message);
         return res.redirect(`/authenticate?redirect=${encodeURIComponent(origionalURL)}`); // Modify with your actual login route
 
@@ -265,6 +265,21 @@ async function readAccessToken(req, res, next) {
     
     return next();
 }
+
+router.delete('/', async (req, res) =>{
+    try{
+        const accessKey = req.cookies.accessKey;
+        await cache.deleteUser(accessKey);
+    }catch(err){
+        console.error(err);
+        return res.status(500).send('Failed to delete user');
+    }
+    
+    clearAccessCookie(res);
+    clearRefreshCookie(res);
+
+    return res.status(100).send('Deleted User Successfully');
+})
 
 function createAccessCookie(res, key){
     res.cookie('accessKey', key, {
@@ -278,15 +293,14 @@ function createAccessCookie(res, key){
     });
 }
 
-function clearAccessCookie(res, key){
-    res.clearCookie('accessKey', key, {
-        //domain: process.env.FRONT_END_HOME, // accessible across subdomains
+function clearAccessCookie(res){
+    res.cookie('accessKey', '', {
+        expires: new Date(0), // Setting a past date to expire the cookie
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
         // sameSite: 'Lax', // Strict same site policy
-        sameSite:'None',
-        maxAge: 1000 * 60 * 10 // 10 minutes in milliseconds
+        sameSite:'None'
     });
 }
 
@@ -302,15 +316,14 @@ function createRefreshCookie(res, key){
     });
 }
 
-function clearRefreshCookie(res, key){
-    res.clearCookie('refreshKey', key, {
-        //domain: process.env.FRONT_END_HOME, // accessible across subdomains
+function clearRefreshCookie(res){
+    res.cookie('refreshKey', '', {
+        expires: new Date(0), // Setting a past date to expire the cookie
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
         // sameSite: 'Lax', // Strict same site policy
-        sameSite:'None',
-        maxAge: 1000 * 60 * 60 * 24 * 60 // 60 days in milliseconds
+        sameSite:'None'
     });
 }
 
@@ -325,14 +338,14 @@ function createStateCookie(res, key){
     });
 }
 
-function clearStateCookie(res, key){
-    res.clearCookie('state', key, {
-        //domain: process.env.FRONT_END_HOME, // accessible across subdomains
+function clearStateCookie(res){
+    res.cookie('state', '', {
+        expires: new Date(0), // Setting a past date to expire the cookie
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
-        sameSite: 'None', // Strict same site policy
-        maxAge: 1000 * 60 * 2 // 2 minutes in milliseconds
+        // sameSite: 'Lax', // Strict same site policy
+        sameSite:'None'
     });
 }
 

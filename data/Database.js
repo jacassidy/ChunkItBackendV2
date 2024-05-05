@@ -48,6 +48,19 @@ async function createUser(token, email){
     }
 }
 
+async function deleteUser(index){
+    const queryString = 'DELETE FROM users WHERE index = $1;';
+    const variables = [index];
+
+    try{
+      await pool.query(queryString, variables);
+      console.log('Deleted User:', index);
+    }catch (err){
+      console.error('Failed to Delete User:', index);
+    }
+
+}
+
 async function setUserSettings(index, settings){
   const client = await pool.connect(); // Acquire a client from the pool
   try {
@@ -146,5 +159,6 @@ module.exports = {
     createUser,
     getUserData,
     getUserIndex,
-    closePool
+    closePool,
+    deleteUser
 }

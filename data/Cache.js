@@ -96,7 +96,24 @@ async function createUser(refreshToken, accessToken){
     return {user_id: encryptedID, accessKey};
 }
 
-function updateUser(accessKey){
+async function deleteUser(accessKey){
+    try{
+        var index = indexes[accessKey];
+    }catch(err){
+        throw new Error('User not in Cache');
+    }
+
+    try{
+        await database.deleteUser(index);
+    }catch(err){
+        throw new Error('Failed to delete user from database');
+    }
+
+    delete access_tokens[index];
+    delete indexes[accessKey];
+}
+
+async function updateUser(accessKey){
     //extends life to 10 more min when using redis
     const index = indexes[accessKey];
     if(!index){
@@ -159,13 +176,13 @@ async function getUserGoogleData(accessKey, data){
         const tasks = await googleData.tasks(accessToken);
         returnData.tasksData = tasks.tasksData;
         returnData.tasksList = tasks.tasksList;
-        console.log('Task Data:', returnData.tasksData);
+        // console.log('Task Data:', returnData.tasksData);
     }
 
     // Check if 'data' contains 'events' and fetch events data
     if (data.includes('events')) {
         returnData.eventsData = await googleData.events(accessToken);
-        console.log('Event Data:', returnData.eventsData);
+        // console.log('Event Data:', returnData.eventsData);
     }
 
     // Check if 'data' contains 'user' and fetch user data
@@ -210,5 +227,6 @@ module.exports = {
     getUserGoogleData,
     addUser,
     createUser,
-    updateUser
+    updateUser,
+    deleteUser
 }
