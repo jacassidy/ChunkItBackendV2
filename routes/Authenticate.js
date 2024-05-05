@@ -272,7 +272,8 @@ function createAccessCookie(res, key){
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
-        sameSite: 'Lax', // Strict same site policy
+        // sameSite: 'Lax', // Strict same site policy
+        sameSite:'None',
         maxAge: 1000 * 60 * 10 // 10 minutes in milliseconds
     });
 }
@@ -283,7 +284,8 @@ function clearAccessCookie(res, key){
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
-        sameSite: 'Lax', // Strict same site policy
+        // sameSite: 'Lax', // Strict same site policy
+        sameSite:'None',
         maxAge: 1000 * 60 * 10 // 10 minutes in milliseconds
     });
 }
@@ -294,7 +296,8 @@ function createRefreshCookie(res, key){
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
-        sameSite: 'Lax', // Strict same site policy
+        // sameSite: 'Lax', // Strict same site policy
+        sameSite:'None',
         maxAge: 1000 * 60 * 60 * 24 * 60 // 60 days in milliseconds
     });
 }
@@ -305,7 +308,8 @@ function clearRefreshCookie(res, key){
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts
         secure: true,    // Ensure you're using HTTPS
-        sameSite: 'Lax', // Strict same site policy
+        // sameSite: 'Lax', // Strict same site policy
+        sameSite:'None',
         maxAge: 1000 * 60 * 60 * 24 * 60 // 60 days in milliseconds
     });
 }
