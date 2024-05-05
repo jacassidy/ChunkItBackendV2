@@ -33,6 +33,13 @@ app.use(cookieParser());
 
 process.env.DEV === 'true' && app.use(express.static(path.join(__dirname, 'public')));
 
+//allow cookies
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.FRONT_END_HOME);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 //Set up endpoints
 app.use("/authenticate", authenticationRouter);
 app.use(authenticate.readAccessToken);
