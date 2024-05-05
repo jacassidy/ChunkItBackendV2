@@ -25,7 +25,13 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 //Necessary for all app fucntion
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONT_END_HOME, // or an array of allowed origins
+  credentials: true
+};
+
+//Necessary for all app fucntion
+app.use(cors(corsOptions));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -56,7 +62,7 @@ app.use(function (req, res, next) {
 });
 
 //Error Handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   /*
     General Error Formating:
 
@@ -105,7 +111,7 @@ app.use(function(err, req, res, next) {
       message = 'Gateway Timeout: The server, while acting as a gateway, did not receive a response in time.';
       break;
     case 500:
-      if(err.type === 'database'){
+      if (err.type === 'database') {
 
       }
 
@@ -128,17 +134,17 @@ app.use(function(err, req, res, next) {
 });
 
 //Shutdown
-async function shutdown(signal){
+async function shutdown(signal) {
   console.log(`${signal} received. Closing database pool and shutting down the app...`);
-    try {
-        await database.closePool();
-        await redisClient.quit();
-        console.log('Database pool has been closed.');
-        process.exit(0); // Successful exit
-    } catch (err) {
-        console.error('Failed to close the database pool:', err);
-        process.exit(1); // Exit with error
-    }
+  try {
+    await database.closePool();
+    await redisClient.quit();
+    console.log('Database pool has been closed.');
+    process.exit(0); // Successful exit
+  } catch (err) {
+    console.error('Failed to close the database pool:', err);
+    process.exit(1); // Exit with error
+  }
 }
 
 const PORT = +process.env.PORT;
