@@ -13,10 +13,10 @@ router.get('/', async (req, res) => {
 
     try {
         const userData = await cache.getUserGoogleData(req.cookies.accessKey, data);
-        res.json(userData);
+        return res.json(userData);
     } catch (error) {
         console.log('Failed to retrieve user google data:', error);
-        res.status(500).send('Failed to retrieve user google data');
+        return res.status(500).send('Failed to retrieve user google data');
     }
 });
         

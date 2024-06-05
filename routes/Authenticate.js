@@ -30,6 +30,8 @@ function createOAuth2Client() {
     );
   }
 
+router.get('/google/callback', googleCallback);
+
 router.get('/google/:type', readRefreshToken, googleAuthenticate); 
 
 router.get('/', readRefreshToken, (req, res) =>{
@@ -67,7 +69,11 @@ async function googleAuthenticate(req, res){
           });
     }
 
-    createStateCookie(res, stateKey);
+    //might want to encode
+    const jwtState = jwt.sign({
+            state: stateKey
+        },process.env.JWT_KEY, { expiresIn: '3m' });
+    createStateCookie(res, jwtState);
     console.log('About to redirect to', url);
     return res.redirect(url);
   }
@@ -83,14 +89,15 @@ async function getTokens(code){
 }
   
   // Route for OAuth callback
-router.get('/google/callback', async (req, res) => {
+
+async function googleCallback(req,res) {
     //add saving redirect between callback
     const redirect = null;
 
-    const key = req.cookies.state;
+    const {state: stateKey} = jwt.verify(req.cookies.state, process.env.JWT_KEY);
         
-    if(!key){
-        console.log('Key Missing, possible timeout');
+    if(!stateKey){
+        console.log('State Missing, possible timeout');
         return res.status(403).send('Key Missing, possible timeout');
     }
     console.log('Found key, deleting state Cookie');
@@ -99,7 +106,7 @@ router.get('/google/callback', async (req, res) => {
 
     const { state, code } = req.query;
 
-    if(key !== state){
+    if(stateKey !== state){
         console.log('STATE MISMATCH; POSSIBLE CSRF!');
         return res.status(403).send('State mismatch, possible Attack!');
     }
@@ -146,7 +153,7 @@ router.get('/google/callback', async (req, res) => {
     }
     return res.status(200).send('Successfully Logged in');
 
-  });
+}
 
 
 function createClinetIdentifyer(req){
@@ -317,8 +324,9 @@ function clearRefreshCookie(res){
     });
 }
 
-function createStateCookie(res, key){
-    res.cookie('state', key, {
+function createStateCookie(res, state){
+
+    res.cookie('state', state, {
         //domain: process.env.FRONT_END_HOME, // accessible across subdomains
         path: '/', // accessible across all paths
         httpOnly: true,  // Cookie cannot be accessed by client-side scripts

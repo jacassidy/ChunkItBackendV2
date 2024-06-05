@@ -8,12 +8,12 @@ const scopes = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/calendar.settings.readonly',
-    // 'openid'
+    'openid'
   ];
 
 const loginScopes = [
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
+    'https://www.googleapis.com/auth/userinfo.profile'
     // 'openid'
 ];
 
